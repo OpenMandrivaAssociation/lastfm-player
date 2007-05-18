@@ -1,7 +1,7 @@
 %define name lastfm-player
 %define oname player
 %define version 1.1.3
-%define rel 1
+%define rel 2
 
 Summary: Last.fm web radio player
 Name: %{name}
@@ -133,9 +133,11 @@ find %buildroot -name .svn |xargs rm -rf
 rm -rf $RPM_BUILD_ROOT
 
 %post
+%update_menus
 %update_icon_cache hicolor
 
 %postun
+%clean_menus
 %clean_icon_cache hicolor
 
 %files
