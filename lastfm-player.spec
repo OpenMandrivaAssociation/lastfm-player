@@ -1,7 +1,7 @@
 %define name lastfm-player
 %define oname player
-%define version 1.1.3
-%define rel 2
+%define version 1.3.1.0
+%define rel 1
 
 Summary: Last.fm web radio player
 Name: %{name}
@@ -14,36 +14,21 @@ Source1: lastfm-icons.tar.bz2
 Source2: trayicons22.tar.bz2
 # gw these patches come from the unofficial Debian package at:
 # http://mehercule.net/staticpages/index.php/lastfm
-# fix user path
-Patch0:  last.fm-1.1.3-01_dirpaths.diff
-# Don't build iTunes related stuff
-Patch2:  last.fm-1.1.3-02_noitunes.diff
-# Single Click in tray icon shows/hides the main window
-Patch3:  last.fm-1.1.3-10_tray.diff
-# Increase max history items from 9 to 100 
-Patch4:  last.fm-1.1.3-11_history.diff
-# Add love and ban items to Recently Played context menu
-Patch5:  last.fm-1.1.3-12_loveban.diff
-# Use a new alsaaudio plugin based on xmms
-Patch6:  last.fm-1.1.3-13_alsa.diff
-# Always show the timebar and song countdown
-Patch7:  lastfm-1.0.9.6-14_timebar.diff
-# Possible scrobble fix. We need to send the "disable scrobbling" signal 
-# just a wee bit later
-Patch8:  lastfm-1.0.9.6-15_scrobble.diff
-# Put an option in Options->Connection that explicitly sets which browser
-# the client uses + Mdv usage of www-browser
-Patch9:  last.fm-1.1.3-16_select-browser.diff
-# Fix a few memory leaks that valgrind reported
-Patch11: lastfm-1.0.9.6-18_valgrind.diff
-# fix another mem leak
-Patch12: lastfm-1.0.9.6-19_delete-http.diff
-# Don't check or download updates
-Patch13: last.fm-1.1.3-20_noupdates.diff
-# Fix translation installation
-Patch14: last.fm-1.1.3-03_translations.diff
-# Add 22x22 icons for tray (modified for Mandriva)
-Patch15: last.fm-1.1.3-21_tray-icon-size.diff
+Patch1:	01_translations.diff
+Patch2:	02_tray-icon-size.diff
+Patch3:	03_no-mediadevice.diff
+Patch4:	04_alsaplayback.diff
+Patch5:	05_tray-volume.diff
+Patch6:	06_history-fix.diff
+Patch7:	07_tooltip-segfault-fix.diff
+Patch8:	08_alsa-default-device.diff
+Patch9:	09_set-locale.diff
+Patch20: 20_dirpaths.diff
+Patch50: 50_dbus.diff
+Patch51: 51_tag-cloud.diff
+Patch52: 52_browser-select.diff
+Patch53: 53_no-cruft.diff
+
 License: GPL
 Group: Sound
 Url: http://www.last.fm/tools/downloads/
@@ -59,20 +44,20 @@ audioscrobbler.com.
 
 %prep
 %setup -q -a 1 -n last.fm-%version
-%patch0 -p1 -b .dirpaths
-%patch2 -p1 -b .noitunes
-%patch14 -p1 -b .translations
-%patch3 -p1 -b .tray
-%patch4 -p1 -b .history
-%patch5 -p1 -b .loveban
-%patch6 -p1 -b .alsa
-%patch7 -p1 -b .timebar
-%patch8 -p1 -b .scrobble
-%patch9 -p1 -b .select-browser
-%patch11 -p1 -b .valgrind
-%patch12 -p1 -b .delete_http
-%patch13 -p1 -b .noupdates
-%patch15 -p1 -b .tray-icon-size
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch20 -p1
+#patch50 -p1
+#patch51 -p1
+#patch52 -p1
+#patch53 -p1
 
 bzcat %{SOURCE2} | tar -C bin/data/icons -xf - 
 
@@ -80,11 +65,11 @@ chmod -R +r .
 perl -pi -e "s|\r\n|\n|" ChangeLog
 
 %build
-%_prefix/lib/qt4/bin/qmake -config release
+%{qt4dir}/bin/qmake -config release
 make CXX="g++ -fPIC"
 
 cd i18n
-%_prefix/lib/qt4/bin/lrelease i18n.pro
+%{qt4dir}/bin/lrelease *.ts
 cp *.qm ../bin/data/i18n
 cd ..
 
@@ -122,7 +107,7 @@ Icon=lastfm
 Terminal=false
 Type=Application
 StartupNotify=true
-Categories=AudioVideo;Audio;Player;X-MandrivaLinux-Multimedia-Sound;
+Categories=AudioVideo;Audio;Player;
 EOF
 
 mkdir -p %buildroot%_datadir/icons
@@ -148,5 +133,3 @@ rm -rf $RPM_BUILD_ROOT
 %_datadir/icons/hicolor/*/apps/lastfm*
 %_libdir/%name
 %_datadir/services/lastfm.protocol
-
-
