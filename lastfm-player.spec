@@ -56,7 +56,7 @@ audioscrobbler.com.
 %patch20 -p1
 #patch50 -p1
 #patch51 -p1
-#patch52 -p1
+%patch52 -p1
 #patch53 -p1
 
 bzcat %{SOURCE2} | tar -C bin/data/icons -xf - 
