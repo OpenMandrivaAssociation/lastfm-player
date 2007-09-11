@@ -1,7 +1,7 @@
 %define name lastfm-player
 %define oname player
 %define version 1.3.1.0
-%define rel 1
+%define rel 2
 
 Summary: Last.fm web radio player
 Name: %{name}
@@ -23,11 +23,7 @@ Patch6:	06_history-fix.diff
 Patch7:	07_tooltip-segfault-fix.diff
 Patch8:	08_alsa-default-device.diff
 Patch9:	09_set-locale.diff
-Patch20: 20_dirpaths.diff
-Patch50: 50_dbus.diff
-Patch51: 51_tag-cloud.diff
 Patch52: 52_browser-select.diff
-Patch53: 53_no-cruft.diff
 
 License: GPL
 Group: Sound
@@ -53,11 +49,7 @@ audioscrobbler.com.
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
-%patch20 -p1
-#patch50 -p1
-#patch51 -p1
 %patch52 -p1
-#patch53 -p1
 
 bzcat %{SOURCE2} | tar -C bin/data/icons -xf - 
 
