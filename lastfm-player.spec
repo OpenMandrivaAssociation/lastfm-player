@@ -98,7 +98,7 @@ Icon=lastfm
 Terminal=false
 Type=Application
 StartupNotify=true
-Categories=AudioVideo;Audio;Player;
+Categories=Qt;AudioVideo;Audio;Player;
 EOF
 
 mkdir -p %buildroot%_datadir/icons
