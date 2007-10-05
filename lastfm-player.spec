@@ -1,7 +1,7 @@
 %define name lastfm-player
 %define oname player
-%define version 1.3.1.0
-%define rel 2
+%define version 1.3.2.13
+%define rel 1
 
 Summary: Last.fm web radio player
 Name: %{name}
@@ -14,22 +14,23 @@ Source1: lastfm-icons.tar.bz2
 Source2: trayicons22.tar.bz2
 # gw these patches come from the unofficial Debian package at:
 # http://mehercule.net/staticpages/index.php/lastfm
-Patch1:	01_translations.diff
+Patch1: 01_translations.diff
 Patch2:	02_tray-icon-size.diff
-Patch3:	03_no-mediadevice.diff
-Patch4:	04_alsaplayback.diff
-Patch5:	05_tray-volume.diff
-Patch6:	06_history-fix.diff
+Patch3: http://mehercule.net/lastfm/03_no-mediadevice.diff
+Patch4: http://mehercule.net/lastfm/04_alsaplayback.diff
+Patch5: http://mehercule.net/lastfm/05_tray-volume.diff
 Patch7:	07_tooltip-segfault-fix.diff
-Patch8:	08_alsa-default-device.diff
+Patch8:	http://mehercule.net/lastfm/08_silence-debug.diff
 Patch9:	09_set-locale.diff
+Patch10: http://mehercule.net/lastfm/10_container-load.diff
+Patch20: http://mehercule.net/lastfm/04_transcode.diff
 Patch52: 52_browser-select.diff
 
 License: GPL
 Group: Sound
 Url: http://www.last.fm/tools/downloads/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: qt4-devel qt4-linguist
+BuildRequires: qt4-devel >= 2:4.2 qt4-linguist
 BuildRequires: libalsa-devel
 Provides: player
 Obsoletes: player
@@ -45,10 +46,11 @@ audioscrobbler.com.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
-%patch6 -p1
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
+%patch20 -p1
 %patch52 -p1
 
 bzcat %{SOURCE2} | tar -C bin/data/icons -xf - 
