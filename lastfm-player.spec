@@ -29,6 +29,7 @@ Patch52: 52_browser-select.diff
 License: GPL
 Group: Sound
 Url: http://www.last.fm/tools/downloads/
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires: qt4-devel >= 2:4.2 qt4-linguist
 BuildRequires: libalsa-devel
 Provides: player
