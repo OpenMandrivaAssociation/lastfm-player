@@ -1,6 +1,6 @@
 %define name lastfm-player
 %define oname player
-%define version 1.3.2.13
+%define version 1.4.2.58240
 %define rel 1
 
 Summary: Last.fm web radio player
@@ -14,24 +14,29 @@ Source1: lastfm-icons.tar.bz2
 Source2: trayicons22.tar.bz2
 # gw these patches come from the unofficial Debian package at:
 # http://mehercule.net/staticpages/index.php/lastfm
-Patch1: 01_translations.diff
+Patch0: http://www.mehercule.net/lastfm/00_build-fixes.diff
+Patch1: http://www.mehercule.net/lastfm/01_translations.diff
 Patch2:	02_tray-icon-size.diff
-Patch3: http://mehercule.net/lastfm/03_no-mediadevice.diff
-Patch4: http://mehercule.net/lastfm/04_alsaplayback.diff
+Patch3: http://www.mehercule.net/lastfm/03_no-scrobble-directories.diff
 Patch5: http://mehercule.net/lastfm/05_tray-volume.diff
-Patch7:	07_tooltip-segfault-fix.diff
-Patch8:	http://mehercule.net/lastfm/08_silence-debug.diff
+Patch7:	http://www.mehercule.net/lastfm/no-fingerprint.diff
+Patch8:	http://www.mehercule.net/lastfm/alsa-qdebug.diff
 Patch9:	09_set-locale.diff
-Patch10: http://mehercule.net/lastfm/10_container-load.diff
-Patch20: http://mehercule.net/lastfm/04_transcode.diff
+Patch10: http://www.mehercule.net/lastfm/10_save-window-states.diff
+Patch11: http://www.mehercule.net/lastfm/check-soundcard-errors.diff
+Patch20: http://www.mehercule.net/lastfm/gcc-4.3.patch
 Patch52: 52_browser-select.diff
 
 License: GPL
 Group: Sound
 Url: http://www.last.fm/tools/downloads/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: qt4-devel >= 2:4.2 qt4-linguist
+BuildRequires: qt4-devel >= 2:4.3.0 qt4-linguist
 BuildRequires: libalsa-devel
+#gw ATM not needed on Linux
+#BuildRequires: fftw3-devel libsamplerate-devel
+BuildRequires: libgpod-devel
+BuildRequires: libmad-devel
 Provides: player
 Obsoletes: player
 
@@ -41,15 +46,16 @@ audioscrobbler.com.
 
 %prep
 %setup -q -a 1 -n last.fm-%version
+%patch -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch4 -p1
 %patch5 -p1
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
+%patch11 -p1
 %patch20 -p1
 %patch52 -p1
 
@@ -64,6 +70,7 @@ make CXX="g++ -fPIC"
 
 cd i18n
 %{qt4dir}/bin/lrelease *.ts
+mkdir -p ../bin/data/i18n
 cp *.qm ../bin/data/i18n
 cd ..
 
@@ -106,6 +113,8 @@ EOF
 mkdir -p %buildroot%_datadir/icons
 cp -r icons/crystalsvg %buildroot%_datadir/icons/hicolor
 find %buildroot -name .svn |xargs rm -rf
+
+rm -f %buildroot%_libdir/%name/*.{lib,dylib}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
