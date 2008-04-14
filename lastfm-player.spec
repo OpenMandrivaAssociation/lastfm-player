@@ -66,7 +66,7 @@ perl -pi -e "s|\r\n|\n|" ChangeLog
 
 %build
 %{qt4dir}/bin/qmake -config release
-make CXX="g++ -fPIC"
+make CXX="g++ -fPIC $(pkg-config --cflags libgpod-1.0"
 
 cd i18n
 %{qt4dir}/bin/lrelease *.ts
