@@ -8,8 +8,7 @@ Name: %{name}
 Version: %{version}
 Release: %mkrel %rel
 Epoch: 1
-# svn://svn.audioscrobbler.net/client
-Source0: http://static.last.fm/client/Linux/last.fm-%version.src.tar.bz2
+Source0: http://cdn.last.fm/client/src/last.fm-%version.src.tar.bz2
 Source1: lastfm-icons.tar.bz2
 Source2: trayicons22.tar.bz2
 # gw these patches come from the unofficial Debian package at:
