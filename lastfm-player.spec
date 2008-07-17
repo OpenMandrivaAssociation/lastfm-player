@@ -1,30 +1,33 @@
 %define name lastfm-player
 %define oname player
-%define version 1.4.2.58240
-%define rel 3
+%define version 1.5.1.31879
+%define rel 1
 
 Summary: Last.fm web radio player
 Name: %{name}
 Version: %{version}
 Release: %mkrel %rel
 Epoch: 1
-Source0: http://cdn.last.fm/client/src/last.fm-%version.src.tar.bz2
+Source0: http://cdn.last.fm/client/src/last.fm-%version.tar.bz2
 Source1: lastfm-icons.tar.bz2
 Source2: trayicons22.tar.bz2
 # gw these patches come from the unofficial Debian package at:
 # http://mehercule.net/staticpages/index.php/lastfm
-Patch0: http://www.mehercule.net/lastfm/00_build-fixes.diff
-Patch1: http://www.mehercule.net/lastfm/01_translations.diff
-Patch2:	02_tray-icon-size.diff
-Patch3: http://www.mehercule.net/lastfm/03_no-scrobble-directories.diff
-Patch5: http://mehercule.net/lastfm/05_tray-volume.diff
-Patch7:	http://www.mehercule.net/lastfm/no-fingerprint.diff
-Patch8:	http://www.mehercule.net/lastfm/alsa-qdebug.diff
-Patch9:	09_set-locale.diff
-Patch10: http://www.mehercule.net/lastfm/10_save-window-states.diff
-Patch11: http://www.mehercule.net/lastfm/check-soundcard-errors.diff
-Patch20: http://www.mehercule.net/lastfm/gcc-4.3.patch
-Patch52: 52_browser-select.diff
+Patch0: build-fixes.diff
+Patch1: reduce-linkage.diff
+Patch2: gcc-4.3.patch
+Patch3: no-fingerprint-lib.diff
+Patch4: alsa-uses-qdebug.diff
+Patch5: check-soundcard-errors.diff
+Patch6: tray-icon-size.diff
+Patch7: hide-scrobbledir-option.diff
+Patch8: hide-crashreport-option.diff
+Patch9: tray-volume.diff
+Patch10: set-locale.diff
+Patch11: cheaper-save-geometry.diff
+Patch12: set-firstrun-status.diff
+Patch13: dirpaths.diff
+Patch52: browser-select.diff
 
 License: GPL
 Group: Sound
@@ -45,17 +48,20 @@ audioscrobbler.com.
 
 %prep
 %setup -q -a 1 -n last.fm-%version
-%patch -p1
+%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 %patch5 -p1
+%patch6 -p1
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
 %patch11 -p1
-%patch20 -p1
+%patch12 -p1
+%patch13 -p1
 %patch52 -p1
 
 bzcat %{SOURCE2} | tar -C bin/data/icons -xf - 
