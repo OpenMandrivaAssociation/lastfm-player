@@ -29,7 +29,7 @@ Patch12: set-firstrun-status.diff
 Patch13: dirpaths.diff
 Patch52: browser-select.diff
 
-License: GPL
+License: GPLv2+
 Group: Sound
 Url: http://www.last.fm/tools/downloads/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
