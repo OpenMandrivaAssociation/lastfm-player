@@ -1,7 +1,7 @@
 %define name lastfm-player
 %define oname player
 %define version 1.5.1.31879
-%define rel 1
+%define rel 2
 
 Summary: Last.fm web radio player
 Name: %{name}
@@ -121,6 +121,9 @@ cp -r icons/crystalsvg %buildroot%_datadir/icons/hicolor
 find %buildroot -name .svn |xargs rm -rf
 
 rm -f %buildroot%_libdir/%name/*.{lib,dylib}
+#gw the dirpaths patch expects the data files there:
+mv %buildroot%_libdir/%name/data %buildroot%_datadir/lastfm
+
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -144,4 +147,5 @@ rm -rf $RPM_BUILD_ROOT
 %_datadir/applications/mandriva-*
 %_datadir/icons/hicolor/*/apps/lastfm*
 %_libdir/%name
+%_datadir/lastfm
 %_datadir/services/lastfm.protocol
