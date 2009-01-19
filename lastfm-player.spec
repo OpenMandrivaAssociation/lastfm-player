@@ -1,7 +1,7 @@
 %define name lastfm-player
 %define oname player
 %define version 1.5.1.31879
-%define rel 2
+%define rel 3
 
 Summary: Last.fm web radio player
 Name: %{name}
