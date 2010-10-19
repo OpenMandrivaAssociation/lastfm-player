@@ -37,14 +37,10 @@ Patch10: set-locale.diff
 Patch12: set-firstrun-status.diff
 # Small style when using Qt >= 4.5
 Patch13: qt45.diff
-%if %mdvver >= 201010
 # Fix some text/icon display issues with Qt >= 4.6
 Patch14: qt46.diff
-%endif
-%if %mdvver >= 201100
 # Fix warnings when compiling with Qt >= 4.7
 Patch15: qt47.diff
-%endif
 # Fix up icon installation path for Linux packages
 Patch16: dirpaths.diff
 
@@ -72,6 +68,13 @@ audioscrobbler.com.
 %prep
 %setup -q -a 1 -n lastfm-%{version}+dfsg
 %apply_patches
+#gw hack to remove patches for backports
+%if %mdvver < 201100
+%patch15 -p1 -R
+%endif
+%if %mdvver < 201010
+%patch14 -p1 -R
+%endif
 
 bzcat %{SOURCE2} | tar -C bin/data/icons -xf - 
 
@@ -80,7 +83,7 @@ perl -pi -e "s|\r\n|\n|" ChangeLog
 
 %build
 %{qt4dir}/bin/qmake -config release
-make CXX="g++ -fPIC $(pkg-config --cflags libgpod-1.0)"
+%make CXX="g++ -fPIC $(pkg-config --cflags libgpod-1.0)" libdir=%_libdir datadir=%_datadir
 
 cd i18n
 %{qt4dir}/bin/lrelease *.ts
@@ -133,6 +136,10 @@ rm -f %buildroot%_libdir/%name/*.{lib,dylib}
 #gw the dirpaths patch expects the data files there:
 mv %buildroot%_libdir/%name/data %buildroot%_datadir/lastfm
 
+#gw mac icons:
+rm -f %buildroot%_datadir/%name/{icons/systray,about,install,wizard}_mac.png
+#gw just for Windows:
+rm -f %buildroot%_libdir/%name/LastFM.exe.config
 
 %clean
 rm -rf $RPM_BUILD_ROOT
