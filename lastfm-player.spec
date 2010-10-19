@@ -1,34 +1,57 @@
 %define name lastfm-player
 %define oname player
-%define version 1.5.1.31879
-%define rel 4
+%define version 1.5.4.26862
+%define rel 1
 
 Summary: Last.fm web radio player
 Name: %{name}
 Version: %{version}
 Release: %mkrel %rel
 Epoch: 1
-Source0: http://cdn.last.fm/client/src/last.fm-%version.tar.bz2
-Source1: lastfm-icons.tar.bz2
+#Source0: http://cdn.last.fm/client/src/last.fm-%version.tar.bz2
+Source0: http://www.mehercule.net/lastfm/lastfm_%{version}+dfsg.orig.tar.gz
+Source1: icons.tar.gz
 Source2: trayicons22.tar.bz2
 # gw these patches come from the unofficial Debian package at:
 # http://mehercule.net/staticpages/index.php/lastfm
+#Don't compile portAudio output plugin on Linux.
+# And fix build on 64bit Fedora 13
 Patch0: build-fixes.diff
+# Make sure the binaries only link to the libraries that they need
 Patch1: reduce-linkage.diff
-Patch2: gcc-4.3.patch
+# The Linux client does not do fingerprinting, so don't build it. This reduces the client's package dependencies.
 Patch3: no-fingerprint-lib.diff
+# With a release build, the ALSA output plugin writes noisy messages to the log file. Only make it noisy in a debug build.
 Patch4: alsa-uses-qdebug.diff
+# Don't segfault: make sure that the audio device is open before we write to it.
 Patch5: check-soundcard-errors.diff
+# Use 22x22 icons for Linux system tray.
 Patch6: tray-icon-size.diff
+# Hide the Scrobble Directories group in the options. It's irrelevant on Linux.
 Patch7: hide-scrobbledir-option.diff
-Patch8: hide-crashreport-option.diff
+# Control the volume by spinning the mouse wheel over the system tray icon.
 Patch9: tray-volume.diff
+# Correctly sets the language when there is no Last.fm.conf file. If you need to change the language after that, you can do so in Tools | Options | Account.
 Patch10: set-locale.diff
-Patch11: cheaper-save-geometry.diff
+# Don't re-run the setup dialog each time the program starts
 Patch12: set-firstrun-status.diff
-Patch13: dirpaths.diff
-Patch52: browser-select.diff
+# Small style when using Qt >= 4.5
+Patch13: qt45.diff
+%if %mdvver >= 201010
+# Fix some text/icon display issues with Qt >= 4.6
+Patch14: qt46.diff
+%endif
+%if %mdvver >= 201100
+# Fix warnings when compiling with Qt >= 4.7
+Patch15: qt47.diff
+%endif
+# Fix up icon installation path for Linux packages
+Patch16: dirpaths.diff
 
+# Explicitly select which browser to use. Set it in Tools | Options | Connection.
+Patch52: browser-select.diff
+#gw fix linking of the ipod plugin
+Patch100: fix-linking.patch
 License: GPLv2+
 Group: Sound
 Url: http://www.last.fm/tools/downloads/
@@ -47,22 +70,8 @@ This is the custom radio player program for last.fm, formerly known as
 audioscrobbler.com.
 
 %prep
-%setup -q -a 1 -n last.fm-%version
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch52 -p1
+%setup -q -a 1 -n lastfm-%{version}+dfsg
+%apply_patches
 
 bzcat %{SOURCE2} | tar -C bin/data/icons -xf - 
 
@@ -117,7 +126,7 @@ Categories=Qt;AudioVideo;Audio;Player;
 EOF
 
 mkdir -p %buildroot%_datadir/icons
-cp -r icons/crystalsvg %buildroot%_datadir/icons/hicolor
+cp -r icons/hicolor %buildroot%_datadir/icons/hicolor
 find %buildroot -name .svn |xargs rm -rf
 
 rm -f %buildroot%_libdir/%name/*.{lib,dylib}
