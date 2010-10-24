@@ -1,7 +1,7 @@
 %define name lastfm-player
 %define oname player
 %define version 1.5.4.26862
-%define rel 1
+%define rel 2
 
 Summary: Last.fm web radio player
 Name: %{name}
@@ -97,8 +97,9 @@ mkdir -p %buildroot{%_bindir,%_libdir/}
 cp -r bin %buildroot%_libdir/%name
 cat << EOF > %buildroot%_bindir/%name
 #!/bin/sh
-export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:%_libdir/%name
-%_libdir/%name/last.fm \$*
+RUNDIR="%_libdir/%name"
+export LD_LIBRARY_PATH="${RUNDIR}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+exec "${RUNDIR}/last.fm" "$@"
 EOF
 install -d -m 755 $RPM_BUILD_ROOT%_datadir/services 
 cat > $RPM_BUILD_ROOT%_datadir/services/lastfm.protocol << EOF
