@@ -1,15 +1,18 @@
 %define name lastfm-player
 %define oname player
 %define version 1.5.4.26862
-%define rel 3
+%define rel 4
 
 Summary: Last.fm web radio player
 Name: %{name}
 Version: %{version}
 Release: %mkrel %rel
 Epoch: 1
-#Source0: http://cdn.last.fm/client/src/last.fm-%version.tar.bz2
-Source0: http://www.mehercule.net/lastfm/lastfm_%{version}+dfsg.orig.tar.gz
+#gw fetched from svn://svn.audioscrobbler.net/clientside/Last.fm/tags/1.5.4
+#with useless binaries and other files removed (just like the Debian folks
+#did with their dfsg tarballs)
+Source0: http://cdn.last.fm/client/src/lastfm-%version.tar.xz
+#Source0: http://www.mehercule.net/lastfm/lastfm_%{version}+dfsg.orig.tar.gz
 Source1: icons.tar.gz
 Source2: trayicons22.tar.bz2
 # gw these patches come from the unofficial Debian package at:
@@ -48,6 +51,7 @@ Patch16: dirpaths.diff
 Patch52: browser-select.diff
 #gw fix linking of the ipod plugin
 Patch100: fix-linking.patch
+Patch101: gcc45.patch
 License: GPLv2+
 Group: Sound
 Url: http://www.last.fm/tools/downloads/
@@ -66,7 +70,7 @@ This is the custom radio player program for last.fm, formerly known as
 audioscrobbler.com.
 
 %prep
-%setup -q -a 1 -n lastfm-%{version}+dfsg
+%setup -q -a 1 -n lastfm-%{version}
 %apply_patches
 #gw hack to remove patches for backports
 %if %mdvver < 201100
@@ -79,7 +83,7 @@ audioscrobbler.com.
 bzcat %{SOURCE2} | tar -C bin/data/icons -xf - 
 
 chmod -R +r .
-perl -pi -e "s|\r\n|\n|" ChangeLog
+perl -pi -e "s|\r\n|\n|" ChangeLog.txt
 
 %build
 %{qt4dir}/bin/qmake -config release
@@ -159,7 +163,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc ChangeLog README
+%doc ChangeLog.txt README
 %attr(755,root,root) %_bindir/%name
 %_datadir/applications/mandriva-*
 %_datadir/icons/hicolor/*/apps/lastfm*
