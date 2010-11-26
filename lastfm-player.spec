@@ -1,7 +1,7 @@
 %define name lastfm-player
 %define oname player
-%define version 1.5.4.26862
-%define rel 4
+%define version 1.5.4.27091
+%define rel 1
 
 Summary: Last.fm web radio player
 Name: %{name}
@@ -10,7 +10,8 @@ Release: %mkrel %rel
 Epoch: 1
 #gw fetched from svn://svn.audioscrobbler.net/clientside/Last.fm/tags/1.5.4
 #with useless binaries and other files removed (just like the Debian folks
-#did with their dfsg tarballs)
+#did with their dfsg tarballs):
+#rm -rf bin/*dll bin/sqldrivers/ bin/Microsoft* bin/*lib res/libsamplerate/ res/mad/ src/Twiddly/iTunesCOMAPI/ src/breakpad/external/ src/libFingerprint/libs/ src/libUnicorn/z* src/mediadevices/ipod/include/ src/output/RtAudio/dsound/ src/output/portAudio/PortAudio/
 Source0: http://cdn.last.fm/client/src/lastfm-%version.tar.xz
 #Source0: http://www.mehercule.net/lastfm/lastfm_%{version}+dfsg.orig.tar.gz
 Source1: icons.tar.gz
@@ -130,7 +131,7 @@ Icon=lastfm
 Terminal=false
 Type=Application
 StartupNotify=true
-Categories=Qt;AudioVideo;Audio;Player;
+Categories=Qt;AudioVideo;Audio;Player;X-MandrivaLinux-CrossDesktop;
 EOF
 
 mkdir -p %buildroot%_datadir/icons
