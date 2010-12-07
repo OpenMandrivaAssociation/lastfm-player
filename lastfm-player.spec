@@ -1,12 +1,11 @@
 %define name lastfm-player
 %define oname player
 %define version 1.5.4.27091
-%define rel 1
 
 Summary: Last.fm web radio player
 Name: %{name}
 Version: %{version}
-Release: %mkrel %rel
+Release: %mkrel 2
 Epoch: 1
 #gw fetched from svn://svn.audioscrobbler.net/clientside/Last.fm/tags/1.5.4
 #with useless binaries and other files removed (just like the Debian folks
@@ -47,12 +46,15 @@ Patch14: qt46.diff
 Patch15: qt47.diff
 # Fix up icon installation path for Linux packages
 Patch16: dirpaths.diff
-
+Patch17: gcc41.diff
+# loved radio is no longer supported, don't include it in the UI
+Patch18: hide-loved-radio.diff
+# don't scrobble tracks twice
+Patch19: ipod-scrobble-fix.diff
 # Explicitly select which browser to use. Set it in Tools | Options | Connection.
 Patch52: browser-select.diff
 #gw fix linking of the ipod plugin
 Patch100: fix-linking.patch
-Patch101: gcc45.patch
 License: GPLv2+
 Group: Sound
 Url: http://www.last.fm/tools/downloads/
