@@ -5,7 +5,7 @@
 Summary: Last.fm web radio player
 Name: %{name}
 Version: %{version}
-Release: %mkrel 2
+Release: %mkrel 3
 Epoch: 1
 #gw fetched from svn://svn.audioscrobbler.net/clientside/Last.fm/tags/1.5.4
 #with useless binaries and other files removed (just like the Debian folks
@@ -55,6 +55,8 @@ Patch19: ipod-scrobble-fix.diff
 Patch52: browser-select.diff
 #gw fix linking of the ipod plugin
 Patch100: fix-linking.patch
+#gw official patch to prevent a crash
+Patch200: sidebar-crash-fix.diff
 License: GPLv2+
 Group: Sound
 Url: http://www.last.fm/tools/downloads/
