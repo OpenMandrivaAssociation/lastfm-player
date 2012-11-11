@@ -1,0 +1,552 @@
+diff -p -up lastfm-1.5.4/src/container.cpp.0052~ lastfm-1.5.4/src/container.cpp
+--- lastfm-1.5.4/src/container.cpp.0052~	2010-11-03 09:26:45.000000000 +0100
++++ lastfm-1.5.4/src/container.cpp	2010-11-03 09:26:46.000000000 +0100
+@@ -44,6 +44,7 @@
+ #include "MetaDataWidget.h"
+ #include "playerlistener.h"
+ #include "Radio.h"
++#include "CustomOpen.h"
+ #include "ShareDialog.h"
+ #include "settingsdialog.h"
+ #include "DiagnosticsDialog.h"
+@@ -970,14 +971,14 @@ Container::updateCheckDone( bool updates
+ void
+ Container::showFAQ()
+ {
+-    QDesktopServices::openUrl( "http://" + UnicornUtils::localizedHostName( The::settings().appLanguage() ) + "/help/faq/" );
++    new CustomOpen( "http://" + UnicornUtils::localizedHostName( The::settings().appLanguage() ) + "/help/faq/" );
+ }
+ 
+ 
+ void
+ Container::showForums()
+ {
+-    QDesktopServices::openUrl( "http://" + UnicornUtils::localizedHostName( The::settings().appLanguage() ) + "/forum/34905/" );
++    new CustomOpen( "http://" + UnicornUtils::localizedHostName( The::settings().appLanguage() ) + "/forum/34905/" );
+ }
+ 
+ 
+@@ -985,7 +986,7 @@ void
+ Container::inviteAFriend()
+ {
+     QByteArray user = QUrl::toPercentEncoding( The::settings().currentUsername() );
+-    QDesktopServices::openUrl( "http://" + UnicornUtils::localizedHostName( The::settings().appLanguage() ) + "/user/" + user + "/inviteafriend/" );
++    new CustomOpen( "http://" + UnicornUtils::localizedHostName( The::settings().appLanguage() ) + "/user/" + user + "/inviteafriend/" );
+ }
+ 
+ 
+@@ -1374,7 +1375,7 @@ void
+ Container::gotoProfile()
+ {
+     QByteArray user = QUrl::toPercentEncoding( The::settings().currentUsername() );
+-    QDesktopServices::openUrl( "http://" + UnicornUtils::localizedHostName( The::settings().appLanguage() ) + "/user/" + user );
++    new CustomOpen( "http://" + UnicornUtils::localizedHostName( The::settings().appLanguage() ) + "/user/" + user );
+ }
+ 
+ 
+@@ -1648,7 +1649,7 @@ Container::onAltShiftL()
+         QString file = QString::fromStdWString( thelog->GetFilePath() );
+         ShellExecuteW( 0, 0, (TCHAR*)file.utf16(), 0, 0, SW_SHOWNORMAL );
+     #else
+-        QDesktopServices::openUrl( QUrl::fromLocalFile( QString::fromStdString( thelog->GetFilePath() ) ) );
++        new CustomOpen( QUrl::fromLocalFile( QString::fromStdString( thelog->GetFilePath() ) ) );
+     #endif
+ }
+ 
+@@ -1661,7 +1662,7 @@ Container::onAltShiftF()
+         QString file = MooseUtils::logPath( "" );
+         ShellExecuteW( 0, 0, (TCHAR*)file.utf16(), 0, 0, SW_SHOWNORMAL );
+     #else
+-        QDesktopServices::openUrl( QUrl::fromLocalFile( MooseUtils::logPath( "" ) ) );
++        new CustomOpen( QUrl::fromLocalFile( MooseUtils::logPath( "" ) ) );
+     #endif
+ }
+ 
+diff -p -up lastfm-1.5.4/src/libMoose/LastFmSettings.h.0052~ lastfm-1.5.4/src/libMoose/LastFmSettings.h
+--- lastfm-1.5.4/src/libMoose/LastFmSettings.h.0052~	2010-11-02 18:24:21.000000000 +0100
++++ lastfm-1.5.4/src/libMoose/LastFmSettings.h	2010-11-03 09:26:46.000000000 +0100
+@@ -285,8 +285,8 @@ public:
+ 
+     int externalSoundSystem();
+ 
+-    QString browser()            const { return QSettings().value( "Browser" ).toString(); }
+-    void setBrowser( QString browser ) { QSettings().setValue( "Browser", browser ); }
++    //QString browser()            const { return QSettings().value( "Browser" ).toString(); }
++    //void setBrowser( QString browser ) { QSettings().setValue( "Browser", browser ); }
+ 
+     int  musicProxyPort() const { return QSettings().value( "MusicProxyPort" ).toInt(); }
+     void setMusicProxyPort( int v ) { QSettings().setValue( "MusicProxyPort", v ); }
+diff -p -up lastfm-1.5.4/src/libUnicorn/CustomOpen.cpp.0052~ lastfm-1.5.4/src/libUnicorn/CustomOpen.cpp
+--- lastfm-1.5.4/src/libUnicorn/CustomOpen.cpp.0052~	2010-11-03 09:26:46.000000000 +0100
++++ lastfm-1.5.4/src/libUnicorn/CustomOpen.cpp	2010-11-03 09:26:46.000000000 +0100
+@@ -0,0 +1,99 @@
++/***************************************************************************
++ *   Copyright (C) 2007 by                                                 *
++ *      John Stamp <jstamp@users.sourceforge.net>                          *
++ *                                                                         *
++ *   Most of this is taken from browserthread.cpp                          *
++ *   Copyright (C) 2005 - 2007 by                                          *
++ *      Christian Muehlhaeuser, Last.fm Ltd <chris@last.fm>                *
++ *      Erik Jaelevik, Last.fm Ltd <erik@last.fm>                          *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or modify  *
++ *   it under the terms of the GNU General Public License as published by  *
++ *   the Free Software Foundation; either version 2 of the License, or     *
++ *   (at your option) any later version.                                   *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program; if not, write to the                         *
++ *   Free Software Foundation, Inc.,                                       *
++ *   51 Franklin Steet, Fifth Floor, Boston, MA  02111-1307, USA.          *
++ ***************************************************************************/
++
++#include "CustomOpen.h"
++#include "Settings.h"
++#include <QDebug>
++#include <QDesktopServices>
++#include <QProcess>
++
++#ifndef WIN32
++#include <fcntl.h>
++#endif
++
++CustomOpen::CustomOpen( const QUrl url )
++{
++    if ( url.scheme() == QLatin1String( "file" ) )
++        QDesktopServices::openUrl( url );
++    else
++        launchBrowser( url );
++
++    deleteLater();
++}
++
++
++void CustomOpen::launchBrowser( const QUrl url )
++{
++    #ifdef WIN32
++    WCHAR val[1024];
++    memset( val, 0, 1024 );
++    MultiByteToWideChar( CP_UTF8, 0, m_url.toAscii(), m_url.length(), val, 1024 );
++    ShellExecute( 0, 0, val, NULL, NULL, SW_SHOW );
++    #endif
++
++    #ifdef Q_WS_MAC
++    ICInstance icInstance;
++    OSType psiSignature = 'Psi ';
++    OSStatus error = ICStart( &icInstance, psiSignature );
++
++    ConstStr255Param hint( 0x0 );
++    const char* data = m_url.toLocal8Bit().data();
++    long length = m_url.length();
++    long start( 0 );
++    long end( length );
++
++    ICLaunchURL( icInstance, hint, data, length, &start, &end );
++    ICStop( icInstance );
++    #endif
++
++    #ifdef Q_WS_X11
++    SharedSettings* settings = SharedSettings::instance();
++    QString browser = settings->browser();
++    QStringList params;
++    params.append( url.toEncoded() );
++
++    QStringList options;
++
++    if ( browser.trimmed() == "" )
++    {
++        QDesktopServices::openUrl( url );
++        goto _end;
++    }
++
++    options = browser.split( " " );
++    if ( options.size() == 0 )
++        options.append( browser );
++
++    for ( int i = 1; i < options.size(); i++ )
++    {
++        qDebug() << QString( "param: " + options.at( i ) ).toLocal8Bit();
++        params.append( "\"" + options.at( i ) + "\"" );
++    }
++
++    QProcess::startDetached( options.at( 0 ), params );
++    _end:
++    return;
++    #endif
++}
+diff -p -up lastfm-1.5.4/src/libUnicorn/CustomOpen.h.0052~ lastfm-1.5.4/src/libUnicorn/CustomOpen.h
+--- lastfm-1.5.4/src/libUnicorn/CustomOpen.h.0052~	2010-11-03 09:26:46.000000000 +0100
++++ lastfm-1.5.4/src/libUnicorn/CustomOpen.h	2010-11-03 09:26:46.000000000 +0100
+@@ -0,0 +1,40 @@
++/***************************************************************************
++ *   Copyright (C) 2007 by                                                 *
++ *      John Stamp <jstamp@users.sourceforge.net>                          *
++ *                                                                         *
++ *   This program is free software; you can redistribute it and/or modify  *
++ *   it under the terms of the GNU General Public License as published by  *
++ *   the Free Software Foundation; either version 2 of the License, or     *
++ *   (at your option) any later version.                                   *
++ *                                                                         *
++ *   This program is distributed in the hope that it will be useful,       *
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
++ *   GNU General Public License for more details.                          *
++ *                                                                         *
++ *   You should have received a copy of the GNU General Public License     *
++ *   along with this program; if not, write to the                         *
++ *   Free Software Foundation, Inc.,                                       *
++ *   51 Franklin Steet, Fifth Floor, Boston, MA  02111-1307, USA.          *
++ ***************************************************************************/
++
++
++#ifndef LAST_FM_CustomOpen_H
++#define LAST_FM_CustomOpen_H
++
++#include <QMutex>
++#include <QUrl>
++#include "UnicornDllExportMacro.h"
++
++class UNICORN_DLLEXPORT CustomOpen : QObject
++{
++    Q_OBJECT
++
++    public:
++        CustomOpen( const QUrl url );
++    private:
++        QMutex m_mutex;
++        void launchBrowser( const QUrl url );
++};
++
++#endif // CustomOpen_H
+diff -p -up lastfm-1.5.4/src/libUnicorn/draglabel.cpp.0052~ lastfm-1.5.4/src/libUnicorn/draglabel.cpp
+--- lastfm-1.5.4/src/libUnicorn/draglabel.cpp.0052~	2010-11-03 09:26:46.000000000 +0100
++++ lastfm-1.5.4/src/libUnicorn/draglabel.cpp	2010-11-03 09:26:46.000000000 +0100
+@@ -21,6 +21,7 @@
+ 
+ #include "draglabel.h"
+ #include "UnicornCommon.h"
++#include "CustomOpen.h"
+ 
+ #include <QApplication>
+ #include <QEvent>
+@@ -818,9 +819,9 @@ DragLabel::mouseReleaseEvent( QMouseEven
+             if ( !m_items[m_hoverIndex].m_url.isEmpty() )
+             {
+                 #ifndef Q_WS_WIN
+-                    QDesktopServices::openUrl( QUrl::fromEncoded( m_items[m_hoverIndex].m_url.toString().toUtf8() ) );
++                    new CustomOpen( QUrl::fromEncoded( m_items[m_hoverIndex].m_url.toString().toUtf8() ) );
+                 #else
+-                    QDesktopServices::openUrl( m_items[m_hoverIndex].m_url );
++                    new CustomOpen( m_items[m_hoverIndex].m_url );
+                 #endif
+             }
+         }
+diff -p -up lastfm-1.5.4/src/libUnicorn/imagebutton.cpp.0052~ lastfm-1.5.4/src/libUnicorn/imagebutton.cpp
+--- lastfm-1.5.4/src/libUnicorn/imagebutton.cpp.0052~	2010-11-02 18:24:21.000000000 +0100
++++ lastfm-1.5.4/src/libUnicorn/imagebutton.cpp	2010-11-03 09:26:46.000000000 +0100
+@@ -20,6 +20,7 @@
+  ***************************************************************************/
+ 
+ #include "imagebutton.h"
++#include "CustomOpen.h"
+ 
+ #include <QDesktopServices>
+ #include <QIcon>
+@@ -84,9 +85,9 @@ ImageButton::mouseReleaseEvent( QMouseEv
+         if ( !m_url.isEmpty() )
+         {
+             #ifndef Q_WS_WIN
+-                QDesktopServices::openUrl( QUrl::fromEncoded( m_url.toString().toUtf8() ) );
++                new CustomOpen( QUrl::fromEncoded( m_url.toString().toUtf8() ) );
+             #else
+-                QDesktopServices::openUrl( m_url );
++                new CustomOpen( m_url );
+             #endif
+         }
+     }
+diff -p -up lastfm-1.5.4/src/libUnicorn/libUnicorn.pro.0052~ lastfm-1.5.4/src/libUnicorn/libUnicorn.pro
+--- lastfm-1.5.4/src/libUnicorn/libUnicorn.pro.0052~	2010-11-02 18:24:21.000000000 +0100
++++ lastfm-1.5.4/src/libUnicorn/libUnicorn.pro	2010-11-03 09:26:46.000000000 +0100
+@@ -53,6 +53,7 @@ HEADERS += \
+         WebService/XmlRpc.h \
+         WebService/FrikkinNormanRequest.h \
+         LastMessageBox.h \
++        CustomOpen.h \
+         StationUrl.h \
+         StopWatch.h \
+         UnicornCommon.h \
+@@ -76,6 +77,7 @@ SOURCES += \
+         TrackInfo.cpp \
+         watermarkwidget.cpp \
+         logger.cpp \
++        CustomOpen.cpp \
+         Settings.cpp \
+         WebService.cpp \
+         WebService/Request.cpp \
+diff -p -up lastfm-1.5.4/src/libUnicorn/Settings.h.0052~ lastfm-1.5.4/src/libUnicorn/Settings.h
+--- lastfm-1.5.4/src/libUnicorn/Settings.h.0052~	2010-11-03 09:26:45.000000000 +0100
++++ lastfm-1.5.4/src/libUnicorn/Settings.h	2010-11-03 09:26:46.000000000 +0100
+@@ -142,6 +142,9 @@ public:
+     QString getProxyPassword()      const { return SharedQSettings().value( "ProxyPassword" ).toString(); }
+     void    setProxyPassword( QString v ) { SharedQSettings().setValue( "ProxyPassword", v ); }
+ 
++    QString browser()            const { return SharedQSettings().value( "Browser" ).toString(); }
++    void setBrowser( QString browser ) { SharedQSettings().setValue( "Browser", browser ); }
++
+ protected:
+ 
+     /// This must be initialised with an instance of the relevant subclass
+@@ -168,6 +171,7 @@ private:
+ 
+     friend class CachedHttp;
+     friend class WebService;
++    friend class CustomOpen;
+ 
+ };
+ 
+diff -p -up lastfm-1.5.4/src/libUnicorn/URLLabel.cpp.0052~ lastfm-1.5.4/src/libUnicorn/URLLabel.cpp
+--- lastfm-1.5.4/src/libUnicorn/URLLabel.cpp.0052~	2010-11-02 18:24:21.000000000 +0100
++++ lastfm-1.5.4/src/libUnicorn/URLLabel.cpp	2010-11-03 09:26:46.000000000 +0100
+@@ -31,6 +31,7 @@
+ **********************************************************************/
+ 
+ #include "URLLabel.h"
++#include "CustomOpen.h"
+ 
+ #include <QApplication>
+ #include <QMouseEvent>
+@@ -399,7 +400,7 @@ URLLabel::openURL( const QUrl& url )
+       #ifndef Q_WS_WIN
+         QDesktopServices::openUrl( QUrl::fromEncoded( url.toString().toUtf8() ) );
+       #else
+-        QDesktopServices::openUrl( url );
++        new CustomOpen( url );
+       #endif
+     }
+ }
+diff -p -up lastfm-1.5.4/src/RestStateWidget.cpp.0052~ lastfm-1.5.4/src/RestStateWidget.cpp
+--- lastfm-1.5.4/src/RestStateWidget.cpp.0052~	2010-11-02 18:24:21.000000000 +0100
++++ lastfm-1.5.4/src/RestStateWidget.cpp	2010-11-03 09:26:46.000000000 +0100
+@@ -31,6 +31,8 @@
+ 
+ #include "lastfmapplication.h"
+ 
++#include "CustomOpen.h"
++
+ #include <QKeyEvent>
+ #include <QDesktopServices>
+ #include <QPainter>
+@@ -353,7 +355,7 @@ RestStateWidget::openBootstrapFaq()
+ {
+     // TODO: might wanna link to the actual bootstrapping category in the faq
+     // disabled for now as we don't have wanna hack on localized urls just one day before release
+-    QDesktopServices::openUrl(
++    new CustomOpen(
+         QUrl( "http://" + UnicornUtils::localizedHostName( The::settings().appLanguage() ) + "/help/faq/" ) ); // ?category=Listening History Importing" ) );
+ }
+ 
+diff -p -up lastfm-1.5.4/src/settingsdialog_connection.ui.0052~ lastfm-1.5.4/src/settingsdialog_connection.ui
+--- lastfm-1.5.4/src/settingsdialog_connection.ui.0052~	2010-11-02 18:24:21.000000000 +0100
++++ lastfm-1.5.4/src/settingsdialog_connection.ui	2010-11-03 09:26:46.000000000 +0100
+@@ -209,6 +209,41 @@
+     </widget>
+    </item>
+    <item>
++    <widget class="QGroupBox" name="browserBox" >
++     <property name="title" >
++      <string>Web Browser</string>
++     </property>
++     <layout class="QVBoxLayout" >
++      <property name="margin" >
++       <number>9</number>
++      </property>
++      <property name="spacing" >
++       <number>6</number>
++      </property>
++      <item>
++       <layout class="QHBoxLayout" >
++        <property name="margin" >
++         <number>0</number>
++        </property>
++        <property name="spacing" >
++         <number>6</number>
++        </property>
++        <item>
++         <widget class="QLabel" name="label" >
++          <property name="text" >
++           <string>Browser</string>
++          </property>
++         </widget>
++        </item>
++        <item>
++         <widget class="QLineEdit" name="browserCommandEdit" />
++        </item>
++       </layout>
++      </item>
++     </layout>
++    </widget>
++   </item>
++   <item>
+     <widget class="QGroupBox" name="groupBox" >
+      <property name="title" >
+       <string>Bandwidth Usage</string>
+diff -p -up lastfm-1.5.4/src/settingsdialog.cpp.0052~ lastfm-1.5.4/src/settingsdialog.cpp
+--- lastfm-1.5.4/src/settingsdialog.cpp.0052~	2010-11-03 09:26:46.000000000 +0100
++++ lastfm-1.5.4/src/settingsdialog.cpp	2010-11-03 09:26:46.000000000 +0100
+@@ -85,6 +85,9 @@ SettingsDialog::SettingsDialog( QWidget
+ 
+     QWidget* connWidget = new QWidget();
+     ui_connection.setupUi( connWidget );
++#ifndef Q_WS_X11
++    ui_connection.browserBox->hide();
++#endif
+     ui.pageStack->addWidget( connWidget );
+ 
+ #ifndef Q_WS_X11
+@@ -246,6 +249,10 @@ SettingsDialog::SettingsDialog( QWidget
+         connect( ui_scrobbling.launchWithMediaPlayerCheck, SIGNAL( toggled( bool ) ), this, SLOT( configChanged() ) );
+         connect( ui_account.showInDockCheck, SIGNAL( toggled( bool ) ), this, SLOT( configChanged() ) );
+     #endif
++
++    #ifdef Q_WS_X11
++    connect( ui_connection.browserCommandEdit, SIGNAL( textChanged( QString ) ), this, SLOT( configChanged() ) );
++    #endif
+ }
+ 
+ 
+@@ -257,6 +264,9 @@ SettingsDialog::exec( int startPage )
+ 
+     m_loginWidget->resetWidget( The::settings().currentUsername() );
+ 
++#ifdef Q_WS_X11
++    originalBrowserCommand = The::settings().browser();
++#endif
+     originalUsername = The::settings().currentUser().username();
+     originalPassword = The::settings().currentUser().password();
+     originalProxyHost = The::settings().getProxyHost();
+@@ -413,6 +423,9 @@ SettingsDialog::populateConnection()
+     ui_connection.crashReportCheck->setChecked( The::settings().currentUser().crashReportingEnabled() );
+ #endif
+     ui_connection.manualProxyButton->setChecked( The::settings().isUseProxy() );
++#ifdef Q_WS_X11
++    ui_connection.browserCommandEdit->setText( The::settings().browser() );
++#endif
+ }
+ 
+ 
+@@ -606,11 +619,18 @@ SettingsDialog::saveConnection()
+     The::settings().currentUser().setCrashReportingEnabled( ui_connection.crashReportCheck->isChecked() );
+ #endif
+ 
++#ifdef Q_WS_X11
++    The::settings().setBrowser( ui_connection.browserCommandEdit->text() );
++#endif
++
+     m_reconnect =  ui_connection.proxyHostEdit->text()              != originalProxyHost     ||
+                    ui_connection.proxyUsernameEdit->text()          != originalProxyUsername ||
+                    ui_connection.proxyPasswordEdit->text()          != originalProxyPassword ||
+                    ui_connection.proxyPortEdit->text().toInt()      != originalProxyPort     ||
+                    ui_connection.manualProxyButton->isChecked()     != originalProxyUsage    ||
++                 #ifdef Q_WS_X11
++                   ui_connection.browserCommandEdit->text()         != originalBrowserCommand ||
++                 #endif
+                    m_reconnect;
+ 
+     pageSaved( 3 );
+diff -p -up lastfm-1.5.4/src/settingsdialog.h.0052~ lastfm-1.5.4/src/settingsdialog.h
+--- lastfm-1.5.4/src/settingsdialog.h.0052~	2010-11-02 18:24:21.000000000 +0100
++++ lastfm-1.5.4/src/settingsdialog.h	2010-11-03 09:26:46.000000000 +0100
+@@ -90,6 +90,8 @@ class SettingsDialog : public QDialog
+         QString originalUsername;
+         QString originalPassword;
+ 
++        QString originalBrowserCommand;
++
+         QString originalProxyHost;
+         QString originalProxyUsername;
+         QString originalProxyPassword;
+diff -p -up lastfm-1.5.4/src/SideBarView.cpp.0052~ lastfm-1.5.4/src/SideBarView.cpp
+--- lastfm-1.5.4/src/SideBarView.cpp.0052~	2010-11-03 09:26:45.000000000 +0100
++++ lastfm-1.5.4/src/SideBarView.cpp	2010-11-03 09:30:06.000000000 +0100
+@@ -40,6 +40,7 @@
+ #include "LastMessageBox.h"
+ #include "lastfmapplication.h"
+ #include "User.h"
++#include "CustomOpen.h"
+ 
+ #include <QDropEvent>
+ #include <QHeaderView>
+@@ -440,7 +441,7 @@ SideBarTree::contextMenuHandler( const Q
+     switch (itemType)
+     {
+         case SideBar::MyProfile:
+-            QDesktopServices::openUrl( "http://" + localizedHost + "/user/" + QUrl::toPercentEncoding( The::settings().currentUsername() ) );
++            new CustomOpen( "http://" + localizedHost + "/user/" + QUrl::toPercentEncoding( The::settings().currentUsername() ) );
+             break;
+         case SideBar::HistoryStation:
+             map[PlayStation] = menu.addAction( ICON_OF( index ), PLAY_THIS_STATION );
+@@ -726,35 +727,35 @@ SideBarTree::contextMenuHandler( const Q
+         {
+             QString const tag = index.data().toString().remove( QRegExp(" \\(\\d*\\)$") );
+ 
+-            QDesktopServices::openUrl( "http://" + localizedHost + "/tag/" +
++            new CustomOpen( "http://" + localizedHost + "/tag/" +
+                                        UnicornUtils::urlEncodeItem( tag ) );
+             break;
+         }
+ 
+         case GoToUserPage:
+-            QDesktopServices::openUrl( "http://" + localizedHost + "/user/" +
++            new CustomOpen( "http://" + localizedHost + "/user/" +
+                                        UnicornUtils::urlEncodeItem( display_role ) );
+             break;
+ 
+         case GoToFriendsPage:
+-            QDesktopServices::openUrl( "http://" + localizedHost + "/user/" +
++            new CustomOpen( "http://" + localizedHost + "/user/" +
+                                        UnicornUtils::urlEncodeItem( The::currentUsername() ) + "/friends/" );
+             break;
+ 
+         case GoToNeighboursPage:
+-            QDesktopServices::openUrl( "http://" + localizedHost + "/user/" +
++            new CustomOpen( "http://" + localizedHost + "/user/" +
+                                        UnicornUtils::urlEncodeItem( The::currentUsername() ) + "/neighbours/" );
+             break;
+ 
+         case GoToTagsPage:
+         {
+-            QDesktopServices::openUrl( "http://" + localizedHost + "/user/" +
++            new CustomOpen( "http://" + localizedHost + "/user/" +
+                                        UnicornUtils::urlEncodeItem( The::currentUsername() ) + "/tags/" );
+             break;
+         }
+ 
+         case GoToTrackPage:
+-            QDesktopServices::openUrl( "http://" + localizedHost + "/music/" +
++            new CustomOpen( "http://" + localizedHost + "/music/" +
+                                        UnicornUtils::urlEncodeItem( m_model->trackAtIndex(index).artist() ) + "/_/" +
+                                        UnicornUtils::urlEncodeItem( m_model->trackAtIndex(index).title() ) + "/" );
+             break;
+diff -p -up lastfm-1.5.4/src/TagListWidget.cpp.0052~ lastfm-1.5.4/src/TagListWidget.cpp
+--- lastfm-1.5.4/src/TagListWidget.cpp.0052~	2010-11-02 18:24:21.000000000 +0100
++++ lastfm-1.5.4/src/TagListWidget.cpp	2010-11-03 09:26:46.000000000 +0100
+@@ -19,6 +19,7 @@
+  ***************************************************************************/
+ 
+ #include "TagListWidget.h"
++#include "CustomOpen.h"
+ 
+ #include "libMoose/LastFmSettings.h"
+ 
+@@ -161,5 +162,5 @@ TagListWidget::openTagPageForCurrentItem
+                "/tag/" +
+                UnicornUtils::urlEncodeItem( currentItem()->text( 0 ) );
+     
+-    QDesktopServices::openUrl( url );
++    new CustomOpen( url );
+ }

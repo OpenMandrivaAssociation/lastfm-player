@@ -1,0 +1,25 @@
+diff -p -up lastfm-1.5.4/LastFM.pro.0000~ lastfm-1.5.4/LastFM.pro
+--- lastfm-1.5.4/LastFM.pro.0000~	2010-11-02 18:24:21.000000000 +0100
++++ lastfm-1.5.4/LastFM.pro	2010-11-03 09:00:19.000000000 +0100
+@@ -41,8 +41,7 @@ linux* {
+     SUBDIRS -= src/Twiddly \
+                src/Bootstrapper/ITunesDevice
+ 
+-    SUBDIRS += src/output/alsa-playback \
+-               src/output/portAudio
++    SUBDIRS += src/output/alsa-playback
+ }
+ 
+ 
+diff -p -up lastfm-1.5.4/src/mediadevices/ipod/ipod.pro.0000~ lastfm-1.5.4/src/mediadevices/ipod/ipod.pro
+--- lastfm-1.5.4/src/mediadevices/ipod/ipod.pro.0000~	2010-11-02 18:24:21.000000000 +0100
++++ lastfm-1.5.4/src/mediadevices/ipod/ipod.pro	2010-11-03 09:23:40.000000000 +0100
+@@ -11,7 +11,7 @@ SOURCES = IpodDevice.cpp
+ linux* {
+     LIBS += -lgpod
+ 
+-    INCLUDEPATH += /usr/include/gpod-1.0 /usr/include/glib-2.0 /usr/lib/glib-2.0/include
++    INCLUDEPATH += /usr/include/gpod-1.0 /usr/include/glib-2.0 /usr/lib/glib-2.0/include /usr/lib64/glib-2.0/include
+ }
+ 
+ mac {

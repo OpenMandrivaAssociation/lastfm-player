@@ -1,0 +1,10 @@
+--- lastfm-1.5.4.26862+dfsg/src/mediadevices/ipod/ipod.pro~	2010-10-19 10:20:17.000000000 +0200
++++ lastfm-1.5.4.26862+dfsg/src/mediadevices/ipod/ipod.pro	2010-10-19 10:29:16.000000000 +0200
+@@ -3,6 +3,7 @@
+ TARGET = Ipod_device
+ QT += sql
+ QT -= gui
++LIBS += -lMoose
+ 
+ include( ../../../definitions.pro.inc )
+ 
