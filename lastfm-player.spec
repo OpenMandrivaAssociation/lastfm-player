@@ -76,7 +76,7 @@ audioscrobbler.com.
 
 %prep
 %setup -q -a 1 -n lastfm-%{version}
-%apply_patches
+%autopatch -p1
 #gw hack to remove patches for backports
 %if %mdvver < 201100
 %patch15 -p1 -R
