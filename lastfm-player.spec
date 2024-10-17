@@ -59,7 +59,7 @@ Patch100: fix-linking.patch
 Patch200: sidebar-crash-fix.diff
 License: GPLv2+
 Group: Sound
-Url: http://www.last.fm/tools/downloads/
+Url: https://www.last.fm/tools/downloads/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires: qt4-devel >= 2:4.3.0 qt4-linguist
 BuildRequires: libalsa-devel
